@@ -1,0 +1,47 @@
+// packages/schema/schema.zmodel
+model User {
+  id     String  @id @default(uuid())
+  email  String  @unique
+  name   String?
+  lists  List[]
+  spaces Space[]
+
+  @@allow('create', true)
+  @@allow('read,update,delete', auth() == this)
+}
+
+model Space {
+  id      String @id @default(uuid())
+  name    String
+  members User[]
+  lists   List[]
+
+  @@allow('create', auth() != null)
+  @@allow('read', members?[id == auth().id])
+  @@allow('update,delete', members?[id == auth().id])
+}
+
+model List {
+  id      String  @id @default(uuid())
+  title   String
+  private Boolean @default(false)
+  space   Space   @relation(fields: [spaceId], references: [id])
+  spaceId String
+  owner   User    @relation(fields: [ownerId], references: [id])
+  ownerId String
+  todos   Todo[]
+
+  @@allow('create', auth() != null && space.members?[id == auth().id])
+  @@allow('read', !private || space.members?[id == auth().id])
+  @@allow('update,delete', owner.id == auth().id)
+}
+
+model Todo {
+  id        String  @id @default(uuid())
+  content   String
+  completed Boolean @default(false)
+  list      List    @relation(fields: [listId], references: [id])
+  listId    String
+
+  @@allow('create,read,update,delete', list.owner.id == auth().id)
+}

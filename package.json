@@ -1,0 +1,13 @@
+{
+  "private": true,
+  "scripts": {
+    "generate": "zenstack generate"
+  },
+  "devDependencies": {
+    "zenstack": "latest"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
+}
